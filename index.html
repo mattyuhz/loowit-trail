@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gear</title>
+<style>
+  :root{
+    --bg:#000;
+    --fg:#fff;
+    --dim:rgba(255,255,255,.6);
+    --rule-heavy:rgba(217,217,217,.32);
+    --rule-mid:rgba(217,217,217,.16);
+    --rule-thin:rgba(217,217,217,.08);
+    --pad:16px;
+    --maxw:412px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);}
+  body{
+    color:var(--fg);
+    font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    min-height:100vh;
+  }
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 var(--pad) 64px;}
+
+  /* ---- tab bar ---- */
+  .tabs{
+    display:flex;gap:24px;
+    padding:18px 0 0;
+    border-bottom:1px solid var(--rule-thin);
+  }
+  .tab{
+    appearance:none;background:none;border:none;cursor:pointer;
+    font-family:inherit;font-size:16px;font-weight:500;letter-spacing:.2px;
+    color:var(--dim);
+    padding:0 0 10px;
+    margin-bottom:-1px;
+    border-bottom:2px solid transparent;
+  }
+  .tab.active{color:var(--fg);border-bottom-color:var(--fg);}
+  .tab:focus-visible{outline:2px solid #fff;outline-offset:3px;border-radius:2px;}
+
+  /* ---- title row ---- */
+  .title{
+    display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+    padding:15px 0 12px;
+  }
+  .title .name{font-size:17px;font-weight:500;letter-spacing:.2px}
+  .title .total{font-size:17px;font-weight:500;color:var(--fg);white-space:nowrap}
+
+  /* ---- category ---- */
+  .cat{border-top:3px solid var(--rule-heavy);}
+  .cat-head{
+    display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+    padding:13px 0;
+  }
+  .cat-head .name{font-size:17px;font-weight:500}
+  .cat-head .total{font-size:17px;font-weight:500;color:var(--fg);white-space:nowrap}
+  .cat-rule{height:2px;background:var(--rule-mid)}
+
+  /* ---- item ---- */
+  .item{padding:11px 0;border-bottom:1px solid var(--rule-thin);}
+  .item .line{display:flex;justify-content:space-between;align-items:baseline;gap:12px;}
+  .item .nm{font-size:16px;font-weight:500;line-height:1.25}
+  .item .ct{font-size:16px;font-weight:400;color:var(--fg);white-space:nowrap}
+  .item .sub{font-size:13px;color:var(--dim);line-height:1.3}
+  .item .wt{font-size:13px;color:var(--dim);white-space:nowrap}
+  .item .line.meta{margin-top:3px}
+</style>
+</head>
+<body>
+  <main class="wrap">
+    <nav class="tabs" id="tabs" role="tablist" aria-label="Whose gear"></nav>
+    <div class="title"><span class="name" id="who"></span><span class="total" id="grand"></span></div>
+    <div id="list"></div>
+  </main>
+
+<script>
+/* =====================================================================
+   EDIT GEAR HERE. Each person has their own list.
+   - grams: weight of ONE unit. null = unknown (renders "x").
+   - count: how many carried (default 1). Totals = grams x count.
+   Counts, category totals, grand total, and lb/oz conversions are all
+   computed. Never edit a total by hand.
+   ===================================================================== */
+
+const PEOPLE = [
+  { key:"matt",     label:"Matt" },
+  { key:"michelle", label:"Michelle" },
+];
+
+const DATASETS = {
+
+  matt: [
+    { cat:"Packing", items:[
+      { nm:"Durston Kakwa 40", sub:"Pack / Ultra 200X", grams:795 },
+      { nm:"Nylofume", sub:"Pack Liner", grams:26 },
+    ]},
+    { cat:"Shelter & Sleep", items:[
+      { nm:"Hyperlite Mountain Gear 20°", sub:"Quilt / Regular", grams:570 },
+      { nm:"Sea to Summit Ether Light XR Insulated", sub:"Sleep Pad / Regular Wide", grams:604 },
+      { nm:"Pillow (Stuff Sack)", sub:"Pillow / Peak Design Stuff Sack > Puffer", grams:null },
+      { nm:"Gnuhr Shag Hoodie", sub:"Sleep Top / Polartec Alpha Direct", grams:124 },
+      { nm:"Ortovox Base Layer", sub:"Sleep Bottom / Merino Wool", grams:null },
+      { nm:"Item", sub:"Sleep Socks", grams:null },
+      { nm:"Earplugs", sub:"Sleep", grams:2 /* est */ },
+      { nm:"Eyemask", sub:"Sleep", grams:20 /* est */ },
+      { nm:"Nemo Dagger Osmo 3P", sub:"Tent", grams:2013 },
+    ]},
+    { cat:"Clothing", items:[
+      { nm:"Montbell EX Light Down Jacket", sub:"Insulation Layer", grams:159 },
+      { nm:"(Base)", sub:"Bottom", grams:null },
+      { nm:"(Base)", sub:"Bottom", grams:null },
+      { nm:"Darn Tough Lightweight Crew", sub:"Socks", grams:57 },
+      { nm:"Darn Tough Midweight Crew", sub:"Socks", grams:72 },
+    ]},
+    { cat:"Worn", items:[
+      { nm:"(Hat)", sub:"Headwear / Sun Protection", grams:null },
+      { nm:"(Sunglasses)", sub:"Headwear / Sun Protection", grams:28 /* est */ },
+      { nm:"(Face / Buff)", sub:"Headwear / Sun Protection", grams:40 /* est */ },
+      { nm:"Mountain Hardwear Crater Lake Hoody", sub:"Top / Sun Protection", grams:168 },
+      { nm:"Ortovox Hiking Base Layer", sub:"Top / Base Layer", grams:null },
+      { nm:"Montbell Trekking Gloves", sub:"Sun Protection", grams:35 /* est */ },
+      { nm:"Caudata NewtFlex", sub:"Bottom", grams:null },
+      { nm:"(Base)", sub:"Bottom", grams:null },
+      { nm:"Darn Tough Lightweight Crew", sub:"Socks", grams:57 },
+      { nm:"Altra Trail Running Gaiters", sub:"Footwear", grams:37 },
+      { nm:"Altra Lone Peak 9", sub:"Footwear", grams:590 },
+      { nm:"Aquaphor Sun Protection Lip Balm", sub:"Sun Protection", grams:10 /* est */ },
+      { nm:"Trail Towel", sub:"Info", grams:null },
+      { nm:"CMT Carbon Trekking Poles", sub:"Info", grams:454 },
+      { nm:"DJI Osmo Pocket 4", sub:"Info", grams:191 },
+      { nm:"iPhone 17 Pro Max", sub:"Info", grams:233 },
+    ]},
+    { cat:"Water System", items:[
+      { nm:"Nalgene 32oz", sub:"Info", grams:177 },
+    ]},
+    { cat:"Kitchen", items:[
+      { nm:"SOTO Windmaster", sub:"Stove", grams:87 },
+      { nm:"Toaks 1100ml Pot", sub:"Cookware", grams:136 },
+      { nm:"Toaks 450ml Cup", sub:"Info", grams:48, count:2 },
+      { nm:"Toaks Long Spoon", sub:"Info", grams:19, count:2 },
+      { nm:"Bic Mini Lighter", sub:"Info", grams:12 },
+      { nm:"Fuel Canister", sub:"Info", grams:365 /* full canister */ },
+    ]},
+    { cat:"Electronics", items:[
+      { nm:"Elecjet Powerpie P20 20k MAH", sub:"Charger", grams:388 },
+      { nm:"Nitecore NU25 UL", sub:"Charger", grams:47 },
+      { nm:"Anker USB-C Cable", sub:"Cable", grams:20 /* est */ },
+    ]},
+    { cat:"Comfort", items:[
+      { nm:"Therm-a-rest Z Seat", sub:"Seating", grams:60 },
+      { nm:"Crocs", sub:"Footwear", grams:312 },
+    ]},
+    { cat:"Navigation & Safety", items:[
+      { nm:"First Aid Kit", sub:"Info", grams:null },
+    ]},
+  ],
+
+  michelle: [
+    { cat:"Pack", items:[
+      { nm:"Durston Kakwa 40", sub:"Pack / Ultragrid", grams:840 },
+      { nm:"Nylofume", sub:"Pack Liner", grams:26 },
+    ]},
+    { cat:"Shelter & Sleep", items:[
+      { nm:"Katabatic Flex 22", sub:"Quilt / Regular Wide", grams:695 },
+      { nm:"Nemo Tensor All Season", sub:"Sleep Pad / Regular Wide", grams:539 },
+      { nm:"Gnuhr Shag Hoodie", sub:"Sleep Top / Polartec Alpha Direct", grams:124 },
+      { nm:"Ortovox Base Layer", sub:"Sleep Bottom / Merino Wool", grams:null },
+      { nm:"Item", sub:"Sleep Socks", grams:null },
+      { nm:"Earplugs", sub:"Sleep", grams:2 /* est */ },
+      { nm:"Eyemask", sub:"Sleep", grams:20 /* est */ },
+      { nm:"Pillow (Stuff Sack)", sub:"Pillow / Peak Design Stuff Sack > Puffer", grams:null },
+    ]},
+    { cat:"Clothing", items:[
+      { nm:"Montbell EX Light Down Jacket", sub:"Insulation Layer", grams:159 },
+      { nm:"(Base)", sub:"Bottom", grams:null },
+      { nm:"(Base)", sub:"Bottom", grams:null },
+      { nm:"Darn Tough Lightweight Crew", sub:"Socks", grams:57 },
+      { nm:"Darn Tough Midweight Crew", sub:"Socks", grams:72 },
+    ]},
+    { cat:"Hygiene & Waste", items:[
+      { nm:"Deodorant", sub:"Info", grams:null },
+      { nm:"Toothbrush", sub:"Info", grams:12 /* est */ },
+      { nm:"Toothpaste", sub:"Info", grams:null },
+      { nm:"Bidet", sub:"Info", grams:12 },
+      { nm:"Smart Bottle 1L", sub:"Info", grams:34 },
+      { nm:"Kula Cloth", sub:"Info", grams:14 },
+      { nm:"Dr. Bronner's Liquid Soap", sub:"Info", grams:null },
+      { nm:"Hand Sanitizer", sub:"Info", grams:30 /* est */ },
+      { nm:"Wag Bag", sub:"Info", grams:null },
+      { nm:"Suluk 46 Tark", sub:"Trowel", grams:16 },
+    ]},
+    { cat:"Worn", items:[
+      { nm:"(Hat)", sub:"Headwear / Sun Protection", grams:null },
+      { nm:"(Sunglasses)", sub:"Headwear / Sun Protection", grams:28 /* est */ },
+      { nm:"(Face / Buff)", sub:"Headwear / Sun Protection", grams:40 /* est */ },
+      { nm:"Mountain Hardwear Crater Lake Hoody", sub:"Info", grams:152 },
+      { nm:"Ortovox Hiking Base Layer", sub:"Top / Base Layer", grams:null },
+      { nm:"(Gloves)", sub:"Info", grams:35 /* est */ },
+      { nm:"(Pants)", sub:"Bottom", grams:null },
+      { nm:"(Base)", sub:"Bottom", grams:null },
+      { nm:"Aquaphor Sun Protection Lip Balm", sub:"Info", grams:10 /* est */ },
+      { nm:"Darn Tough Lightweight Crew", sub:"Socks", grams:57 },
+      { nm:"Altra Trail Running Gaiters", sub:"Footwear", grams:37 },
+      { nm:"Altra Lone Peak 9+", sub:"Footwear", grams:590 },
+      { nm:"Trail Towel", sub:"Info", grams:null },
+      { nm:"CMT Carbon Trekking Poles", sub:"Info", grams:454 },
+      { nm:"Fujifilm X100VI", sub:"Info", grams:521 },
+      { nm:"iPhone 16 Pro Max", sub:"Info", grams:227 },
+    ]},
+    { cat:"Water System", items:[
+      { nm:"Nalgene 32oz", sub:"Info", grams:177 },
+      { nm:"Platypus 2L", sub:"Info", grams:36 },
+      { nm:"Sawyer Squeeze", sub:"Info", grams:85 },
+      { nm:"CNOC Vecto 2L", sub:"Info", grams:76 },
+    ]},
+    { cat:"Hydration & Drink", items:[
+      { nm:"Liquid IV", sub:"Info", grams:null },
+      { nm:"SaltStick", sub:"Info", grams:null },
+      { nm:"Instant Coffee", sub:"Info", grams:null },
+    ]},
+    { cat:"Food", items:[
+      { nm:"Meal 1 — MA", sub:"Thursday Evening", grams:null },
+      { nm:"Meal 1 — MG", sub:"Thursday Evening", grams:null },
+      { nm:"Meal 2 — MA", sub:"Friday Morning", grams:null },
+      { nm:"Meal 2 — MG", sub:"Friday Morning", grams:null },
+      { nm:"Meal 3 — MA", sub:"Friday Evening", grams:null },
+      { nm:"Meal 3 — MG", sub:"Friday Evening", grams:null },
+      { nm:"Meal 4 — MA", sub:"Saturday Morning", grams:null },
+      { nm:"Meal 4 — MG", sub:"Saturday Morning", grams:null },
+      { nm:"Meal 5 — MA", sub:"Saturday Evening", grams:null },
+      { nm:"Meal 5 — MG", sub:"Saturday Evening", grams:null },
+      { nm:"Meal 6 — MA", sub:"Sunday Morning", grams:null },
+      { nm:"Meal 6 — MG", sub:"Sunday Morning", grams:null },
+    ]},
+    { cat:"Electronics", items:[
+      { nm:"Nitecore NB 10k", sub:"Charger", grams:143 },
+      { nm:"Nitecore NU25 UL", sub:"Charger", grams:47 },
+      { nm:"Anker USB-C Cable", sub:"Cable", grams:20 /* est */ },
+    ]},
+    { cat:"Navigation & Safety", items:[
+      { nm:"Item", sub:"Info", grams:null },
+    ]},
+    { cat:"Comfort", items:[
+      { nm:"Therm-a-rest Z Seat", sub:"Seating", grams:60 },
+      { nm:"Crocs", sub:"Footwear", grams:312 },
+      { nm:"Bug Repellent", sub:"Info", grams:null },
+      { nm:"Bug Net", sub:"Info", grams:20 /* est */ },
+    ]},
+  ],
+
+};
+
+/* ---- formatting ---- */
+const G_PER_LB = 453.59237;
+const G_PER_OZ = 28.349523;
+
+function fmtWeight(g){
+  if(g == null) return "x";
+  const grams = Math.round(g);
+  const lb = (g / G_PER_LB).toFixed(2);
+  const oz = (g / G_PER_OZ).toFixed(1);
+  return grams.toLocaleString() + "g / " + lb + "lb / " + oz + "oz";
+}
+
+function el(tag, cls, txt){
+  const e = document.createElement(tag);
+  if(cls) e.className = cls;
+  if(txt != null) e.textContent = txt;
+  return e;
+}
+
+/* ---- build tabs once ---- */
+const tabsEl = document.getElementById("tabs");
+PEOPLE.forEach(p => {
+  const b = el("button","tab",p.label);
+  b.id = "tab-" + p.key;
+  b.setAttribute("role","tab");
+  b.addEventListener("click", () => { location.hash = p.key; });
+  tabsEl.appendChild(b);
+});
+
+/* ---- render a dataset ---- */
+function render(key){
+  const person = PEOPLE.find(p => p.key === key) || PEOPLE[0];
+  const data = DATASETS[person.key];
+
+  PEOPLE.forEach(p => {
+    const t = document.getElementById("tab-" + p.key);
+    const on = p.key === person.key;
+    t.classList.toggle("active", on);
+    t.setAttribute("aria-selected", on ? "true" : "false");
+  });
+
+  document.getElementById("who").textContent = person.label;
+
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+  let grand = 0;
+
+  data.forEach(group => {
+    const section = el("section","cat");
+    let catTotal = 0;
+
+    const head = el("div","cat-head");
+    head.appendChild(el("span","name", group.cat));
+    const catTotalEl = el("span","total");
+    head.appendChild(catTotalEl);
+    section.appendChild(head);
+    section.appendChild(el("div","cat-rule"));
+
+    group.items.forEach(it => {
+      const count = it.count || 1;
+      if(it.grams != null){ catTotal += it.grams * count; grand += it.grams * count; }
+      const item = el("div","item");
+      const l1 = el("div","line");
+      l1.appendChild(el("span","nm", it.nm));
+      l1.appendChild(el("span","ct", "(" + count + ")"));
+      const l2 = el("div","line meta");
+      l2.appendChild(el("span","sub", it.sub || ""));
+      l2.appendChild(el("span","wt", fmtWeight(it.grams)));
+      item.appendChild(l1); item.appendChild(l2);
+      section.appendChild(item);
+    });
+
+    catTotalEl.textContent = catTotal > 0 ? fmtWeight(catTotal) : "(Total Weight)";
+    list.appendChild(section);
+  });
+
+  document.getElementById("grand").textContent = fmtWeight(grand);
+  document.title = person.label + " — Gear";
+}
+
+function currentKey(){
+  const h = (location.hash || "").replace("#","");
+  return PEOPLE.some(p => p.key === h) ? h : PEOPLE[0].key;
+}
+window.addEventListener("hashchange", () => render(currentKey()));
+render(currentKey());
+</script>
+</body>
+</html>
