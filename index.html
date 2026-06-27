@@ -28,13 +28,11 @@
   }
   .wrap{max-width:var(--maxw);margin:0 auto;padding:0 var(--pad) 64px;}
 
-  /* ---- sticky top bar ---- */
+  /* ---- top bar ---- */
   .topbar{
-    position:sticky;top:0;z-index:30;
-    background:var(--bg);
     display:flex;justify-content:space-between;align-items:center;gap:12px;
-    padding:calc(env(safe-area-inset-top, 0px) + 14px) 0 0;
-    border-bottom:1px solid rgba(255,255,255,.12);
+    padding:14px 0 0;
+    border-bottom:1px solid var(--rule-thin);
   }
   .tabs{display:flex;gap:24px;}
   .tab{
