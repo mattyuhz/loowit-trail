@@ -8,7 +8,9 @@
   :root{
     --bg:#000;
     --fg:#fff;
-    --dim:rgba(255,255,255,.6);
+    --dim:rgba(255,255,255,.64);
+    --faint:rgba(255,255,255,.32);
+    --est:#ff6b6b;
     --rule-heavy:rgba(217,217,217,.32);
     --rule-mid:rgba(217,217,217,.16);
     --rule-thin:rgba(217,217,217,.08);
@@ -26,55 +28,93 @@
   }
   .wrap{max-width:var(--maxw);margin:0 auto;padding:0 var(--pad) 64px;}
 
-  /* ---- tab bar ---- */
-  .tabs{
-    display:flex;gap:24px;
-    padding:18px 0 0;
+  /* ---- sticky top bar ---- */
+  .topbar{
+    position:sticky;top:0;z-index:30;
+    background:var(--bg);
+    display:flex;justify-content:space-between;align-items:center;gap:12px;
+    padding:14px 0 0;
     border-bottom:1px solid var(--rule-thin);
   }
+  .tabs{display:flex;gap:24px;}
   .tab{
     appearance:none;background:none;border:none;cursor:pointer;
     font-family:inherit;font-size:16px;font-weight:500;letter-spacing:.2px;
-    color:var(--dim);
-    padding:0 0 10px;
-    margin-bottom:-1px;
+    color:var(--faint);
+    padding:0 0 12px;margin-bottom:-1px;
     border-bottom:2px solid transparent;
   }
   .tab.active{color:var(--fg);border-bottom-color:var(--fg);}
   .tab:focus-visible{outline:2px solid #fff;outline-offset:3px;border-radius:2px;}
 
-  /* ---- title row ---- */
-  .title{
-    display:flex;justify-content:space-between;align-items:baseline;gap:12px;
-    padding:15px 0 12px;
+  /* unit toggle */
+  .units{display:flex;gap:4px;padding-bottom:9px;}
+  .unit{
+    appearance:none;border:none;cursor:pointer;font-family:inherit;
+    font-size:12px;font-weight:400;color:var(--dim);
+    background:rgba(255,255,255,.06);
+    height:16px;padding:0 9px;border-radius:8px;
+    display:flex;align-items:center;
   }
-  .title .name{font-size:17px;font-weight:500;letter-spacing:.2px}
-  .title .total{font-size:17px;font-weight:500;color:var(--fg);white-space:nowrap}
+  .unit.active{background:#fff;color:#000;}
+  .unit:focus-visible{outline:2px solid #fff;outline-offset:2px;}
+
+  /* ---- 4 summary boxes ---- */
+  .boxes{display:flex;gap:4px;padding:16px 0 18px;}
+  .box{
+    flex:1;min-width:0;
+    background:rgba(255,255,255,.06);
+    border-radius:16px;padding:11px 12px;height:55px;
+    display:flex;flex-direction:column;justify-content:space-between;
+  }
+  .box .v{font-size:16px;font-weight:500;white-space:nowrap;letter-spacing:-.1px;}
+  .box .k{font-size:11px;color:var(--dim);white-space:nowrap;}
 
   /* ---- category ---- */
-  .cat{border-top:3px solid var(--rule-heavy);}
+  .cat{border-top:4px solid var(--rule-heavy);}
   .cat-head{
     display:flex;justify-content:space-between;align-items:baseline;gap:12px;
-    padding:13px 0;
+    padding:12px 0;
   }
   .cat-head .name{font-size:17px;font-weight:500}
-  .cat-head .total{font-size:17px;font-weight:500;color:var(--fg);white-space:nowrap}
+  .cat-head .total{font-size:15px;font-weight:400;color:var(--dim);white-space:nowrap}
   .cat-rule{height:2px;background:var(--rule-mid)}
 
   /* ---- item ---- */
-  .item{padding:11px 0;border-bottom:1px solid var(--rule-thin);}
-  .item .line{display:flex;justify-content:space-between;align-items:baseline;gap:12px;}
+  .item{padding:8px 0;border-bottom:1px solid var(--rule-thin);}
+  .item .line{display:flex;justify-content:space-between;align-items:center;gap:12px;}
   .item .nm{font-size:16px;font-weight:500;line-height:1.25}
-  .item .ct{font-size:16px;font-weight:400;color:var(--fg);white-space:nowrap}
   .item .sub{font-size:13px;color:var(--dim);line-height:1.3}
   .item .wt{font-size:13px;color:var(--dim);white-space:nowrap}
-  .item .line.meta{margin-top:3px}
+  .item .wt.est{color:var(--est)}
+  .item .line.meta{margin-top:1px;align-items:baseline}
+
+  /* expandable parent + children */
+  .item.has-children .row{cursor:pointer;}
+  .item.has-children .row:active{opacity:.55;}
+  .item.has-children .row:focus-visible{outline:2px solid #fff;outline-offset:3px;border-radius:3px;}
+  .chev{
+    flex:none;width:16px;height:16px;color:var(--dim);
+    display:flex;align-items:center;justify-content:center;
+    transition:transform .2s ease;
+  }
+  .chev svg{width:16px;height:16px;display:block;}
+  .item.open .chev{transform:rotate(180deg);}
+  .children{display:none;margin:8px 0 0 10px;padding-left:16px;border-left:2px solid var(--rule-mid);}
+  .item.open .children{display:block;}
+  .child{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:8px 0;}
+  .child .nm{font-size:16px;font-weight:500;color:var(--fg);line-height:1.25}
+  .child .wt{font-size:13px;color:var(--dim);white-space:nowrap}
+  .child .wt.est{color:var(--est)}
 </style>
 </head>
 <body>
   <main class="wrap">
-    <nav class="tabs" id="tabs" role="tablist" aria-label="Whose gear"></nav>
-    <div class="title"><span class="name" id="who"></span><span class="total" id="grand"></span></div>
+    <header class="topbar">
+      <nav class="tabs" id="tabs" role="tablist" aria-label="Whose gear"></nav>
+      <div class="units" id="units" role="group" aria-label="Weight unit"></div>
+    </header>
+    <div class="boxes" id="boxes"></div>
     <div id="list"></div>
   </main>
 
@@ -83,8 +123,21 @@
    EDIT GEAR HERE. Each person has their own list.
    - grams: weight of ONE unit. null = unknown (renders "x").
    - count: how many carried (default 1). Totals = grams x count.
-   Counts, category totals, grand total, and lb/oz conversions are all
-   computed. Never edit a total by hand.
+            count > 1 shows "xN" after the name (no more "(1)" clutter).
+   - consumable:true: food / water / fuel. Excluded from base weight.
+   - children:[ {nm, grams, est?}, ... ]: makes the row an EXPANDABLE
+            group. Omit the parent's grams — its weight is the sum of the
+            children. The parent inherits its own category + consumable
+            flag for the whole group. Good for kits: first aid, snacks,
+            tent components, repair kit, toiletry bag, etc.
+   - est:true: marks a weight as an estimate (renders red). Works on
+            items and on individual children.
+   Weight classes (all computed, never edit a total by hand):
+     • Worn / carried = every item in the "Worn" category (on body, in hand)
+     • Consumables    = items flagged consumable:true
+     • Base           = everything else (what's in the pack, minus consumables)
+     • Total          = base + worn + consumables
+   Unit toggle (GR/oz/lb) is display-only; always store grams.
    ===================================================================== */
 
 const PEOPLE = [
@@ -108,10 +161,19 @@ const DATASETS = {
       { nm:"Item", sub:"Sleep Socks", grams:null },
       { nm:"Earplugs", sub:"Sleep", grams:2 /* est */ },
       { nm:"Eyemask", sub:"Sleep", grams:20 /* est */ },
-      { nm:"Nemo Dagger Osmo 3P", sub:"Tent", grams:2013 },
+      { nm:"Nemo Dagger Osmo 3P", sub:"Tent", est:true, children:[
+        { nm:"Canopy / Inner", grams:700, est:true },
+        { nm:"Rainfly", grams:640, est:true },
+        { nm:"Poles", grams:430, est:true },
+        { nm:"Stakes", grams:150, est:true },
+        { nm:"Stuff Sacks", grams:93, est:true },
+      ]},
+      { nm:"Nemo Dagger Osmo 3P Footprint", sub:"Tent / Ground Sheet", grams:300 },
     ]},
     { cat:"Clothing", items:[
       { nm:"Montbell EX Light Down Jacket", sub:"Insulation Layer", grams:159 },
+      { nm:"(Rain / Wind Jacket)", sub:"Shell / Top", grams:null },
+      { nm:"(Rain / Wind Pants)", sub:"Shell / Bottom", grams:null },
       { nm:"(Base)", sub:"Bottom", grams:null },
       { nm:"(Base)", sub:"Bottom", grams:null },
       { nm:"Darn Tough Lightweight Crew", sub:"Socks", grams:57 },
@@ -130,6 +192,7 @@ const DATASETS = {
       { nm:"Altra Trail Running Gaiters", sub:"Footwear", grams:37 },
       { nm:"Altra Lone Peak 9", sub:"Footwear", grams:590 },
       { nm:"Aquaphor Sun Protection Lip Balm", sub:"Sun Protection", grams:10 /* est */ },
+      { nm:"Anessa Perfect UV Sunscreen", sub:"Sun Protection", grams:90 /* est */ },
       { nm:"Trail Towel", sub:"Info", grams:null },
       { nm:"CMT Carbon Trekking Poles", sub:"Info", grams:454 },
       { nm:"DJI Osmo Pocket 4", sub:"Info", grams:191 },
@@ -137,6 +200,7 @@ const DATASETS = {
     ]},
     { cat:"Water System", items:[
       { nm:"Nalgene 32oz", sub:"Info", grams:177 },
+      { nm:"Chlorine Dioxide Tabs", sub:"Backup Purification", grams:5 /* est */ },
     ]},
     { cat:"Kitchen", items:[
       { nm:"SOTO Windmaster", sub:"Stove", grams:87 },
@@ -144,7 +208,23 @@ const DATASETS = {
       { nm:"Toaks 450ml Cup", sub:"Info", grams:48, count:2 },
       { nm:"Toaks Long Spoon", sub:"Info", grams:19, count:2 },
       { nm:"Bic Mini Lighter", sub:"Info", grams:12 },
-      { nm:"Fuel Canister", sub:"Info", grams:365 /* full canister */ },
+      { nm:"Fuel Canister", sub:"Info", grams:365 /* full canister */, consumable:true },
+    ]},
+    { cat:"Food", items:[
+      { nm:"Dinner 1", sub:"Thursday Evening", grams:250, est:true, consumable:true },
+      { nm:"Breakfast 1", sub:"Friday Morning", grams:100, est:true, consumable:true },
+      { nm:"Dinner 2", sub:"Friday Evening", grams:250, est:true, consumable:true },
+      { nm:"Breakfast 2", sub:"Saturday Morning", grams:100, est:true, consumable:true },
+      { nm:"Dinner 3", sub:"Saturday Evening", grams:250, est:true, consumable:true },
+      { nm:"Breakfast 3", sub:"Sunday Morning", grams:100, est:true, consumable:true },
+      { nm:"Trail Snacks", sub:"Graze / Lunch", est:true, consumable:true, children:[
+        { nm:"Trail Mix", grams:300, est:true },
+        { nm:"Nuts / PB Packets", grams:150, est:true },
+        { nm:"Chocolate / M&Ms", grams:180, est:true },
+        { nm:"Fritos / Crackers", grams:120, est:true },
+        { nm:"Bars (KIND / RX)", grams:150, est:true },
+        { nm:"Jerky", grams:100, est:true },
+      ]},
     ]},
     { cat:"Electronics", items:[
       { nm:"Elecjet Powerpie P20 20k MAH", sub:"Charger", grams:388 },
@@ -156,12 +236,18 @@ const DATASETS = {
       { nm:"Crocs", sub:"Footwear", grams:312 },
     ]},
     { cat:"Navigation & Safety", items:[
-      { nm:"First Aid Kit", sub:"Info", grams:null },
+      { nm:"First Aid Kit", sub:"Info", est:true, children:[
+        { nm:"Leukotape / Blister Care", grams:20, est:true },
+        { nm:"Ibuprofen / Meds", grams:15, est:true },
+        { nm:"Bandages / Gauze", grams:25, est:true },
+        { nm:"Antiseptic Wipes", grams:10, est:true },
+        { nm:"Misc (tweezers, tape)", grams:30, est:true },
+      ]},
     ]},
   ],
 
   michelle: [
-    { cat:"Pack", items:[
+    { cat:"Packing", items:[
       { nm:"Durston Kakwa 40", sub:"Pack / Ultragrid", grams:840 },
       { nm:"Nylofume", sub:"Pack Liner", grams:26 },
     ]},
@@ -173,10 +259,12 @@ const DATASETS = {
       { nm:"Item", sub:"Sleep Socks", grams:null },
       { nm:"Earplugs", sub:"Sleep", grams:2 /* est */ },
       { nm:"Eyemask", sub:"Sleep", grams:20 /* est */ },
-      { nm:"Pillow (Stuff Sack)", sub:"Pillow / Peak Design Stuff Sack > Puffer", grams:null },
+      { nm:"Sea to Summit Aeros Premium", sub:"Pillow / Regular", grams:79 },
     ]},
     { cat:"Clothing", items:[
       { nm:"Montbell EX Light Down Jacket", sub:"Insulation Layer", grams:159 },
+      { nm:"(Rain / Wind Jacket)", sub:"Shell / Top", grams:null },
+      { nm:"(Rain / Wind Pants)", sub:"Shell / Bottom", grams:null },
       { nm:"(Base)", sub:"Bottom", grams:null },
       { nm:"(Base)", sub:"Bottom", grams:null },
       { nm:"Darn Tough Lightweight Crew", sub:"Socks", grams:57 },
@@ -191,7 +279,7 @@ const DATASETS = {
       { nm:"Kula Cloth", sub:"Info", grams:14 },
       { nm:"Dr. Bronner's Liquid Soap", sub:"Info", grams:null },
       { nm:"Hand Sanitizer", sub:"Info", grams:30 /* est */ },
-      { nm:"Wag Bag", sub:"Info", grams:null },
+      { nm:"Wag Bag", sub:"Info", grams:65 /* est */, count:2 },
       { nm:"Suluk 46 Tark", sub:"Trowel", grams:16 },
     ]},
     { cat:"Worn", items:[
@@ -204,6 +292,7 @@ const DATASETS = {
       { nm:"(Pants)", sub:"Bottom", grams:null },
       { nm:"(Base)", sub:"Bottom", grams:null },
       { nm:"Aquaphor Sun Protection Lip Balm", sub:"Info", grams:10 /* est */ },
+      { nm:"Biore UV Athlizm (Spray)", sub:"Sun Protection", grams:90 /* est */ },
       { nm:"Darn Tough Lightweight Crew", sub:"Socks", grams:57 },
       { nm:"Altra Trail Running Gaiters", sub:"Footwear", grams:37 },
       { nm:"Altra Lone Peak 9+", sub:"Footwear", grams:590 },
@@ -219,23 +308,25 @@ const DATASETS = {
       { nm:"CNOC Vecto 2L", sub:"Info", grams:76 },
     ]},
     { cat:"Hydration & Drink", items:[
-      { nm:"Liquid IV", sub:"Info", grams:null },
-      { nm:"SaltStick", sub:"Info", grams:null },
-      { nm:"Instant Coffee", sub:"Info", grams:null },
+      { nm:"Liquid IV", sub:"Info", grams:null, consumable:true },
+      { nm:"SaltStick", sub:"Info", grams:null, consumable:true },
+      { nm:"Instant Coffee", sub:"Info", grams:null, consumable:true },
     ]},
     { cat:"Food", items:[
-      { nm:"Meal 1 — MA", sub:"Thursday Evening", grams:null },
-      { nm:"Meal 1 — MG", sub:"Thursday Evening", grams:null },
-      { nm:"Meal 2 — MA", sub:"Friday Morning", grams:null },
-      { nm:"Meal 2 — MG", sub:"Friday Morning", grams:null },
-      { nm:"Meal 3 — MA", sub:"Friday Evening", grams:null },
-      { nm:"Meal 3 — MG", sub:"Friday Evening", grams:null },
-      { nm:"Meal 4 — MA", sub:"Saturday Morning", grams:null },
-      { nm:"Meal 4 — MG", sub:"Saturday Morning", grams:null },
-      { nm:"Meal 5 — MA", sub:"Saturday Evening", grams:null },
-      { nm:"Meal 5 — MG", sub:"Saturday Evening", grams:null },
-      { nm:"Meal 6 — MA", sub:"Sunday Morning", grams:null },
-      { nm:"Meal 6 — MG", sub:"Sunday Morning", grams:null },
+      { nm:"Dinner 1", sub:"Thursday Evening", grams:250, est:true, consumable:true },
+      { nm:"Breakfast 1", sub:"Friday Morning", grams:100, est:true, consumable:true },
+      { nm:"Dinner 2", sub:"Friday Evening", grams:250, est:true, consumable:true },
+      { nm:"Breakfast 2", sub:"Saturday Morning", grams:100, est:true, consumable:true },
+      { nm:"Dinner 3", sub:"Saturday Evening", grams:250, est:true, consumable:true },
+      { nm:"Breakfast 3", sub:"Sunday Morning", grams:100, est:true, consumable:true },
+      { nm:"Trail Snacks", sub:"Graze / Lunch", est:true, consumable:true, children:[
+        { nm:"Trail Mix", grams:300, est:true },
+        { nm:"Nuts / PB Packets", grams:150, est:true },
+        { nm:"Chocolate / M&Ms", grams:180, est:true },
+        { nm:"Fritos / Crackers", grams:120, est:true },
+        { nm:"Bars (KIND / RX)", grams:150, est:true },
+        { nm:"Jerky", grams:100, est:true },
+      ]},
     ]},
     { cat:"Electronics", items:[
       { nm:"Nitecore NB 10k", sub:"Charger", grams:143 },
@@ -259,12 +350,20 @@ const DATASETS = {
 const G_PER_LB = 453.59237;
 const G_PER_OZ = 28.349523;
 
-function fmtWeight(g){
+const state = { unit: "g" };
+const UNITS = [
+  { key:"g",  label:"gr" },
+  { key:"oz", label:"oz" },
+  { key:"lb", label:"lb" },
+];
+
+const CHEVRON = '<svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+function fmt(g){
   if(g == null) return "x";
-  const grams = Math.round(g);
-  const lb = (g / G_PER_LB).toFixed(2);
-  const oz = (g / G_PER_OZ).toFixed(1);
-  return grams.toLocaleString() + "g / " + lb + "lb / " + oz + "oz";
+  if(state.unit === "oz") return (g / G_PER_OZ).toFixed(1) + "oz";
+  if(state.unit === "lb") return (g / G_PER_LB).toFixed(2) + "lb";
+  return Math.round(g).toLocaleString() + "g";
 }
 
 function el(tag, cls, txt){
@@ -274,7 +373,13 @@ function el(tag, cls, txt){
   return e;
 }
 
-/* ---- build tabs once ---- */
+/* sum of one item: children if present, else grams x count */
+function itemWeight(it){
+  if(it.children) return it.children.reduce((s,c) => s + (c.grams != null ? c.grams * (c.count||1) : 0), 0);
+  return it.grams != null ? it.grams * (it.count||1) : 0;
+}
+
+/* ---- build tabs + unit toggle once ---- */
 const tabsEl = document.getElementById("tabs");
 PEOPLE.forEach(p => {
   const b = el("button","tab",p.label);
@@ -283,6 +388,17 @@ PEOPLE.forEach(p => {
   b.addEventListener("click", () => { location.hash = p.key; });
   tabsEl.appendChild(b);
 });
+
+const unitsEl = document.getElementById("units");
+UNITS.forEach(u => {
+  const b = el("button","unit",u.label);
+  b.id = "unit-" + u.key;
+  b.addEventListener("click", () => { state.unit = u.key; render(currentKey()); });
+  unitsEl.appendChild(b);
+});
+
+/* remembers which groups are expanded, keyed person/cat/name */
+const expanded = new Set();
 
 /* ---- render a dataset ---- */
 function render(key){
@@ -295,15 +411,20 @@ function render(key){
     t.classList.toggle("active", on);
     t.setAttribute("aria-selected", on ? "true" : "false");
   });
-
-  document.getElementById("who").textContent = person.label;
+  UNITS.forEach(u => {
+    const b = document.getElementById("unit-" + u.key);
+    const on = u.key === state.unit;
+    b.classList.toggle("active", on);
+    b.setAttribute("aria-pressed", on ? "true" : "false");
+  });
 
   const list = document.getElementById("list");
   list.innerHTML = "";
-  let grand = 0;
+  let total = 0, worn = 0, consumable = 0;
 
   data.forEach(group => {
     const section = el("section","cat");
+    const isWorn = group.cat === "Worn";
     let catTotal = 0;
 
     const head = el("div","cat-head");
@@ -314,24 +435,83 @@ function render(key){
     section.appendChild(el("div","cat-rule"));
 
     group.items.forEach(it => {
-      const count = it.count || 1;
-      if(it.grams != null){ catTotal += it.grams * count; grand += it.grams * count; }
-      const item = el("div","item");
+      const w = itemWeight(it);
+      catTotal += w; total += w;
+      if(isWorn) worn += w;
+      else if(it.consumable) consumable += w;
+
+      const hasKids = !!it.children;
+      const key2 = person.key + "/" + group.cat + "/" + it.nm;
+      const open = hasKids && expanded.has(key2);
+
+      const item = el("div","item" + (hasKids ? " has-children" : "") + (open ? " open" : ""));
+      const nmText = it.nm + ((it.count||1) > 1 ? "  \u00d7" + it.count : "");
+
+      const row = el("div","row");
       const l1 = el("div","line");
-      l1.appendChild(el("span","nm", it.nm));
-      l1.appendChild(el("span","ct", "(" + count + ")"));
+      l1.appendChild(el("span","nm", nmText));
+      if(hasKids){
+        const chev = el("span","chev");
+        chev.innerHTML = CHEVRON;
+        l1.appendChild(chev);
+      }
       const l2 = el("div","line meta");
       l2.appendChild(el("span","sub", it.sub || ""));
-      l2.appendChild(el("span","wt", fmtWeight(it.grams)));
-      item.appendChild(l1); item.appendChild(l2);
+      const wt = el("span","wt", fmt(hasKids ? w : it.grams));
+      if(it.est) wt.classList.add("est");
+      l2.appendChild(wt);
+      row.appendChild(l1); row.appendChild(l2);
+      item.appendChild(row);
+
+      if(hasKids){
+        row.setAttribute("role","button");
+        row.setAttribute("tabindex","0");
+        row.setAttribute("aria-expanded", open ? "true" : "false");
+
+        const kids = el("div","children");
+        it.children.forEach(c => {
+          const crow = el("div","child");
+          crow.appendChild(el("span","nm", c.nm));
+          const cw = el("span","wt", fmt(c.grams != null ? c.grams * (c.count||1) : null));
+          if(c.est) cw.classList.add("est");
+          crow.appendChild(cw);
+          kids.appendChild(crow);
+        });
+        item.appendChild(kids);
+
+        const toggle = () => {
+          const nowOpen = item.classList.toggle("open");
+          row.setAttribute("aria-expanded", nowOpen ? "true" : "false");
+          if(nowOpen) expanded.add(key2); else expanded.delete(key2);
+        };
+        row.addEventListener("click", toggle);
+        row.addEventListener("keydown", e => {
+          if(e.key === "Enter" || e.key === " "){ e.preventDefault(); toggle(); }
+        });
+      }
+
       section.appendChild(item);
     });
 
-    catTotalEl.textContent = catTotal > 0 ? fmtWeight(catTotal) : "(Total Weight)";
+    catTotalEl.textContent = catTotal > 0 ? fmt(catTotal) : "(Total Weight)";
     list.appendChild(section);
   });
 
-  document.getElementById("grand").textContent = fmtWeight(grand);
+  const base = total - worn - consumable;
+  const boxesEl = document.getElementById("boxes");
+  boxesEl.innerHTML = "";
+  [
+    ["Total", total],
+    ["Base", base],
+    ["Consum.", consumable],
+    ["Worn", worn],
+  ].forEach(([k, v]) => {
+    const box = el("div","box");
+    box.appendChild(el("span","v", fmt(v)));
+    box.appendChild(el("span","k", k));
+    boxesEl.appendChild(box);
+  });
+
   document.title = person.label + " — Gear";
 }
 
