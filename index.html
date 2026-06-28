@@ -51,7 +51,7 @@
     appearance:none;border:none;cursor:pointer;font-family:inherit;
     font-size:12px;font-weight:400;color:var(--dim);
     background:rgba(255,255,255,.06);
-    height:16px;padding:0 9px;border-radius:8px;
+    height:24px;padding:0 11px;border-radius:12px;
     display:flex;align-items:center;
   }
   .unit.active{background:#fff;color:#000;}
@@ -82,6 +82,12 @@
   .item{padding:8px 0;border-bottom:1px solid var(--rule-thin);}
   .item .line{display:flex;justify-content:space-between;align-items:center;gap:12px;}
   .item .nm{font-size:16px;font-weight:500;line-height:1.25}
+  .name-wrap{display:inline-flex;align-items:center;gap:8px;min-width:0;}
+  .worn-badge{
+    flex:none;background:#fff;color:#000;
+    font-size:11px;font-weight:500;line-height:1;
+    padding:2.5px 8px;border-radius:8px;white-space:nowrap;
+  }
   .item .sub{font-size:13px;color:var(--dim);line-height:1.3}
   .item .wt{font-size:13px;color:var(--dim);white-space:nowrap}
   .item .wt.est{color:var(--est)}
@@ -101,6 +107,7 @@
   .children{display:none;margin:8px 0 0 10px;padding-left:16px;border-left:2px solid var(--rule-mid);}
   .item.open .children{display:block;}
   .child{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:8px 0;}
+  .child.has-sub{display:block;}
   .child .nm{font-size:16px;font-weight:500;color:var(--fg);line-height:1.25}
   .child .wt{font-size:13px;color:var(--dim);white-space:nowrap}
   .child .wt.est{color:var(--est)}
@@ -170,31 +177,30 @@ const DATASETS = {
     ]},
     { cat:"Clothing", items:[
       { nm:"Montbell EX Light Down Jacket", sub:"Insulation Layer", grams:159 },
-      { nm:"(Rain / Wind Jacket)", sub:"Shell / Top", grams:null },
+      { nm:"Montbell Tempest", sub:"Shell / Top", grams:256 },
       { nm:"(Rain / Wind Pants)", sub:"Shell / Bottom", grams:null },
       { nm:"(Base)", sub:"Bottom", grams:null },
       { nm:"(Base)", sub:"Bottom", grams:null },
       { nm:"Darn Tough Lightweight Crew", sub:"Socks", grams:57 },
       { nm:"Darn Tough Midweight Crew", sub:"Socks", grams:72 },
+      { nm:"(Hat)", sub:"Headwear / Sun Protection", grams:null, worn:true },
+      { nm:"(Sunglasses)", sub:"Headwear / Sun Protection", grams:28, worn:true },
+      { nm:"(Face / Buff)", sub:"Headwear / Sun Protection", grams:40, worn:true },
+      { nm:"Mountain Hardwear Crater Lake Hoody", sub:"Top / Sun Protection", grams:168, worn:true },
+      { nm:"Ortovox Hiking Base Layer", sub:"Top / Base Layer", grams:null, worn:true },
+      { nm:"Montbell Trekking Gloves", sub:"Sun Protection", grams:35, worn:true },
+      { nm:"Caudata NewtFlex", sub:"Bottom", grams:null, worn:true },
+      { nm:"(Base)", sub:"Bottom", grams:null, worn:true },
+      { nm:"Darn Tough Lightweight Crew", sub:"Socks", grams:57, worn:true },
     ]},
-    { cat:"Worn", items:[
-      { nm:"(Hat)", sub:"Headwear / Sun Protection", grams:null },
-      { nm:"(Sunglasses)", sub:"Headwear / Sun Protection", grams:28 /* est */ },
-      { nm:"(Face / Buff)", sub:"Headwear / Sun Protection", grams:40 /* est */ },
-      { nm:"Mountain Hardwear Crater Lake Hoody", sub:"Top / Sun Protection", grams:168 },
-      { nm:"Ortovox Hiking Base Layer", sub:"Top / Base Layer", grams:null },
-      { nm:"Montbell Trekking Gloves", sub:"Sun Protection", grams:35 /* est */ },
-      { nm:"Caudata NewtFlex", sub:"Bottom", grams:null },
-      { nm:"(Base)", sub:"Bottom", grams:null },
-      { nm:"Darn Tough Lightweight Crew", sub:"Socks", grams:57 },
-      { nm:"Altra Trail Running Gaiters", sub:"Footwear", grams:37 },
-      { nm:"Altra Lone Peak 9", sub:"Footwear", grams:590 },
-      { nm:"Aquaphor Sun Protection Lip Balm", sub:"Sun Protection", grams:10 /* est */ },
-      { nm:"Anessa Perfect UV Sunscreen", sub:"Sun Protection", grams:90 /* est */ },
-      { nm:"Trail Towel", sub:"Info", grams:null },
-      { nm:"CMT Carbon Trekking Poles", sub:"Info", grams:454 },
-      { nm:"DJI Osmo Pocket 4", sub:"Info", grams:191 },
-      { nm:"iPhone 17 Pro Max", sub:"Info", grams:233 },
+    { cat:"Footwear", items:[
+      { nm:"Altra Lone Peak 9", sub:"Trail Runners", grams:590, worn:true },
+      { nm:"Altra Trail Running Gaiters", sub:"Gaiters", grams:37, worn:true },
+    ]},
+    { cat:"Hygiene & Waste", items:[
+      { nm:"Anessa Perfect UV Sunscreen", sub:"Sun Protection", grams:90, worn:true },
+      { nm:"Aquaphor Sun Protection Lip Balm", sub:"Sun Protection", grams:10, worn:true },
+      { nm:"Trail Towel", sub:"Info", grams:null, worn:true },
     ]},
     { cat:"Water System", items:[
       { nm:"Nalgene 32oz", sub:"Info", grams:177 },
@@ -209,38 +215,50 @@ const DATASETS = {
       { nm:"Fuel Canister", sub:"Info", grams:365 /* full canister */, consumable:true },
     ]},
     { cat:"Food", items:[
-      { nm:"Dinner 1", sub:"Thursday Evening", grams:250, est:true, consumable:true },
-      { nm:"Breakfast 1", sub:"Friday Morning", grams:100, est:true, consumable:true },
-      { nm:"Dinner 2", sub:"Friday Evening", grams:250, est:true, consumable:true },
-      { nm:"Breakfast 2", sub:"Saturday Morning", grams:100, est:true, consumable:true },
-      { nm:"Dinner 3", sub:"Saturday Evening", grams:250, est:true, consumable:true },
-      { nm:"Breakfast 3", sub:"Sunday Morning", grams:100, est:true, consumable:true },
-      { nm:"Trail Snacks", sub:"Graze / Lunch", est:true, consumable:true, children:[
-        { nm:"Trail Mix", grams:300, est:true },
-        { nm:"Nuts / PB Packets", grams:150, est:true },
-        { nm:"Chocolate / M&Ms", grams:180, est:true },
-        { nm:"Fritos / Crackers", grams:120, est:true },
-        { nm:"Bars (KIND / RX)", grams:150, est:true },
-        { nm:"Jerky", grams:100, est:true },
+      { nm:"Thanksgiving Stuffing", sub:"Dinner", grams:147, count:2, consumable:true },
+      { nm:"Gochujang Pasta", sub:"Dinner", grams:162, consumable:true },
+      { nm:"Ochazuke", sub:"Breakfast", grams:125, count:3, consumable:true },
+      { nm:"Trail Snacks", sub:"Graze / Lunch", consumable:true, children:[
+        { nm:"Trail Mix", grams:184 },
+        { nm:"Yogurt Pretzels", grams:115 },
+        { nm:"Justin's Peanut Butter", grams:35.4, count:4 },
+        { nm:"Strawberry & Blueberry RX Bar", grams:28, count:6 },
+        { nm:"Assorted KIND Bars", grams:50, count:4 },
+        { nm:"Assorted Barbells", grams:62, count:3 },
+        { nm:"Fruit Leather", grams:20, count:3 },
       ]},
     ]},
     { cat:"Electronics", items:[
       { nm:"Elecjet Powerpie P20 20k MAH", sub:"Charger", grams:388 },
       { nm:"Nitecore NU25 UL", sub:"Charger", grams:47 },
       { nm:"Anker USB-C Cable", sub:"Cable", grams:20 /* est */ },
+      { nm:"DJI Osmo Pocket 4", sub:"Camera", grams:191, worn:true },
+      { nm:"iPhone 17 Pro Max", sub:"Phone", grams:233, worn:true },
     ]},
     { cat:"Comfort", items:[
       { nm:"Therm-a-rest Z Seat", sub:"Seating", grams:60 },
       { nm:"Crocs", sub:"Footwear", grams:312 },
     ]},
     { cat:"Navigation & Safety", items:[
-      { nm:"First Aid Kit", sub:"Info", est:true, children:[
-        { nm:"Leukotape / Blister Care", grams:20, est:true },
-        { nm:"Ibuprofen / Meds", grams:15, est:true },
-        { nm:"Bandages / Gauze", grams:25, est:true },
-        { nm:"Antiseptic Wipes", grams:10, est:true },
-        { nm:"Misc (tweezers, tape)", grams:30, est:true },
+      { nm:"First Aid Kit", sub:"Info", children:[
+        { nm:"Leukotape", sub:"Blister & hot-spot care", grams:20 },
+        { nm:"Adhesive Bandages", sub:"Cuts & scrapes", grams:0.733, count:6 },
+        { nm:"Gauze Pads", sub:"Wound dressing", grams:1.9, count:2 },
+        { nm:"Micropore Tape", sub:"Secures dressings", grams:19 },
+        { nm:"Alcohol Prep Pads", sub:"Clean wounds & skin", grams:1, count:6 },
+        { nm:"Triple Antibiotic Ointment", sub:"Prevents infection", grams:1.133, count:3 },
+        { nm:"Hydrocortisone Cream", sub:"Itch, rash & bites", grams:1.2, count:3 },
+        { nm:"First Aid Cream", sub:"Numbs & disinfects", grams:1.4, count:3 },
+        { nm:"Hand Sanitizer", sub:"Hand hygiene", grams:0.9, count:3 },
+        { nm:"Ibuprofen 200mg", sub:"Inflammation & swelling", grams:0.45, count:6 },
+        { nm:"Advil Dual Action", sub:"Stronger pain (combo)", grams:1, count:6 },
+        { nm:"Acetaminophen 500mg", sub:"Pain & fever (NSAID-free)", grams:0.675, count:4 },
+        { nm:"Chewable Aspirin", sub:"Cardiac emergency", grams:null, est:true },
+        { nm:"Elastic Wrap", sub:"Sprains & joint support", grams:null, est:true },
+        { nm:"Anti-Diarrheal", sub:"Diarrhea & GI illness", grams:null, est:true },
+        { nm:"Antihistamine", sub:"Allergic reactions", grams:null, est:true },
       ]},
+      { nm:"CMT Carbon Trekking Poles", sub:"Trekking Poles", grams:454, worn:true },
     ]},
   ],
 
@@ -261,16 +279,25 @@ const DATASETS = {
     ]},
     { cat:"Clothing", items:[
       { nm:"Montbell EX Light Down Jacket", sub:"Insulation Layer", grams:159 },
-      { nm:"(Rain / Wind Jacket)", sub:"Shell / Top", grams:null },
+      { nm:"Montbell Storm Cruiser", sub:"Shell / Top", grams:266 },
       { nm:"(Rain / Wind Pants)", sub:"Shell / Bottom", grams:null },
       { nm:"(Base)", sub:"Bottom", grams:null },
       { nm:"(Base)", sub:"Bottom", grams:null },
       { nm:"Darn Tough Lightweight Crew", sub:"Socks", grams:57 },
       { nm:"Darn Tough Midweight Crew", sub:"Socks", grams:72 },
+      { nm:"(Hat)", sub:"Headwear / Sun Protection", grams:null, worn:true },
+      { nm:"(Sunglasses)", sub:"Headwear / Sun Protection", grams:28, worn:true },
+      { nm:"(Face / Buff)", sub:"Headwear / Sun Protection", grams:40, worn:true },
+      { nm:"Mountain Hardwear Crater Lake Hoody", sub:"Top / Sun Protection", grams:152, worn:true },
+      { nm:"Ortovox Hiking Base Layer", sub:"Top / Base Layer", grams:null, worn:true },
+      { nm:"(Gloves)", sub:"Sun Protection", grams:35, worn:true },
+      { nm:"(Pants)", sub:"Bottom", grams:null, worn:true },
+      { nm:"(Base)", sub:"Bottom", grams:null, worn:true },
+      { nm:"Darn Tough Lightweight Crew", sub:"Socks", grams:57, worn:true },
     ]},
     { cat:"Hygiene & Waste", items:[
       { nm:"Deodorant", sub:"Info", grams:null },
-      { nm:"Toothbrush", sub:"Info", grams:12 /* est */ },
+      { nm:"Toothbrush", sub:"Info", grams:11.5, count:2 },
       { nm:"Toothpaste", sub:"Info", grams:null },
       { nm:"Bidet", sub:"Info", grams:12 },
       { nm:"Smart Bottle 1L", sub:"Info", grams:34 },
@@ -279,25 +306,13 @@ const DATASETS = {
       { nm:"Hand Sanitizer", sub:"Info", grams:30 /* est */ },
       { nm:"Wag Bag", sub:"Info", grams:65 /* est */, count:2 },
       { nm:"Suluk 46 Tark", sub:"Trowel", grams:16 },
+      { nm:"Biore UV Athlizm (Spray)", sub:"Sun Protection", grams:90, worn:true },
+      { nm:"Aquaphor Sun Protection Lip Balm", sub:"Sun Protection", grams:10, worn:true },
+      { nm:"Trail Towel", sub:"Info", grams:null, worn:true },
     ]},
-    { cat:"Worn", items:[
-      { nm:"(Hat)", sub:"Headwear / Sun Protection", grams:null },
-      { nm:"(Sunglasses)", sub:"Headwear / Sun Protection", grams:28 /* est */ },
-      { nm:"(Face / Buff)", sub:"Headwear / Sun Protection", grams:40 /* est */ },
-      { nm:"Mountain Hardwear Crater Lake Hoody", sub:"Info", grams:152 },
-      { nm:"Ortovox Hiking Base Layer", sub:"Top / Base Layer", grams:null },
-      { nm:"(Gloves)", sub:"Info", grams:35 /* est */ },
-      { nm:"(Pants)", sub:"Bottom", grams:null },
-      { nm:"(Base)", sub:"Bottom", grams:null },
-      { nm:"Aquaphor Sun Protection Lip Balm", sub:"Info", grams:10 /* est */ },
-      { nm:"Biore UV Athlizm (Spray)", sub:"Sun Protection", grams:90 /* est */ },
-      { nm:"Darn Tough Lightweight Crew", sub:"Socks", grams:57 },
-      { nm:"Altra Trail Running Gaiters", sub:"Footwear", grams:37 },
-      { nm:"Altra Lone Peak 9+", sub:"Footwear", grams:590 },
-      { nm:"Trail Towel", sub:"Info", grams:null },
-      { nm:"CMT Carbon Trekking Poles", sub:"Info", grams:454 },
-      { nm:"Fujifilm X100VI", sub:"Info", grams:521 },
-      { nm:"iPhone 16 Pro Max", sub:"Info", grams:227 },
+    { cat:"Footwear", items:[
+      { nm:"Altra Lone Peak 9+", sub:"Trail Runners", grams:590, worn:true },
+      { nm:"Altra Trail Running Gaiters", sub:"Gaiters", grams:37, worn:true },
     ]},
     { cat:"Water System", items:[
       { nm:"Nalgene 32oz", sub:"Info", grams:177 },
@@ -311,28 +326,28 @@ const DATASETS = {
       { nm:"Instant Coffee", sub:"Info", grams:null, consumable:true },
     ]},
     { cat:"Food", items:[
-      { nm:"Dinner 1", sub:"Thursday Evening", grams:250, est:true, consumable:true },
-      { nm:"Breakfast 1", sub:"Friday Morning", grams:100, est:true, consumable:true },
-      { nm:"Dinner 2", sub:"Friday Evening", grams:250, est:true, consumable:true },
-      { nm:"Breakfast 2", sub:"Saturday Morning", grams:100, est:true, consumable:true },
-      { nm:"Dinner 3", sub:"Saturday Evening", grams:250, est:true, consumable:true },
-      { nm:"Breakfast 3", sub:"Sunday Morning", grams:100, est:true, consumable:true },
-      { nm:"Trail Snacks", sub:"Graze / Lunch", est:true, consumable:true, children:[
-        { nm:"Trail Mix", grams:300, est:true },
-        { nm:"Nuts / PB Packets", grams:150, est:true },
-        { nm:"Chocolate / M&Ms", grams:180, est:true },
-        { nm:"Fritos / Crackers", grams:120, est:true },
-        { nm:"Bars (KIND / RX)", grams:150, est:true },
-        { nm:"Jerky", grams:100, est:true },
+      { nm:"Thanksgiving Stuffing", sub:"Dinner", grams:147, count:2, consumable:true },
+      { nm:"Gochujang Pasta", sub:"Dinner", grams:162, consumable:true },
+      { nm:"Ochazuke", sub:"Breakfast", grams:125, count:3, consumable:true },
+      { nm:"Trail Snacks", sub:"Graze / Lunch", consumable:true, children:[
+        { nm:"Trail Mix", grams:184 },
+        { nm:"Yogurt Pretzels", grams:115 },
+        { nm:"Assorted KIND Bars", grams:50, count:6 },
+        { nm:"Skippy PB Packets", grams:36, count:4 },
+        { nm:"Tajin Gummy Bears", grams:31, count:2 },
+        { nm:"Assorted Barbells", grams:62, count:3 },
+        { nm:"Fruit Leather", grams:20, count:3 },
       ]},
     ]},
     { cat:"Electronics", items:[
       { nm:"Nitecore NB 10k", sub:"Charger", grams:143 },
       { nm:"Nitecore NU25 UL", sub:"Charger", grams:47 },
       { nm:"Anker USB-C Cable", sub:"Cable", grams:20 /* est */ },
+      { nm:"Fujifilm X100VI", sub:"Camera", grams:521, worn:true },
+      { nm:"iPhone 16 Pro Max", sub:"Phone", grams:227, worn:true },
     ]},
     { cat:"Navigation & Safety", items:[
-      { nm:"Item", sub:"Info", grams:null },
+      { nm:"CMT Carbon Trekking Poles", sub:"Trekking Poles", grams:454, worn:true },
     ]},
     { cat:"Comfort", items:[
       { nm:"Therm-a-rest Z Seat", sub:"Seating", grams:60 },
@@ -422,7 +437,6 @@ function render(key){
 
   data.forEach(group => {
     const section = el("section","cat");
-    const isWorn = group.cat === "Worn";
     let catTotal = 0;
 
     const head = el("div","cat-head");
@@ -435,7 +449,7 @@ function render(key){
     group.items.forEach(it => {
       const w = itemWeight(it);
       catTotal += w; total += w;
-      if(isWorn) worn += w;
+      if(it.worn) worn += w;
       else if(it.consumable) consumable += w;
 
       const hasKids = !!it.children;
@@ -447,7 +461,10 @@ function render(key){
 
       const row = el("div","row");
       const l1 = el("div","line");
-      l1.appendChild(el("span","nm", nmText));
+      const nameWrap = el("span","name-wrap");
+      nameWrap.appendChild(el("span","nm", nmText));
+      if(it.worn) nameWrap.appendChild(el("span","worn-badge", "Worn"));
+      l1.appendChild(nameWrap);
       if(hasKids){
         const chev = el("span","chev");
         chev.innerHTML = CHEVRON;
@@ -455,7 +472,7 @@ function render(key){
       }
       const l2 = el("div","line meta");
       l2.appendChild(el("span","sub", it.sub || ""));
-      const wt = el("span","wt", fmt(hasKids ? w : it.grams));
+      const wt = el("span","wt", fmt(hasKids ? w : (it.grams != null ? it.grams * (it.count||1) : null)));
       if(it.est) wt.classList.add("est");
       l2.appendChild(wt);
       row.appendChild(l1); row.appendChild(l2);
@@ -468,12 +485,28 @@ function render(key){
 
         const kids = el("div","children");
         it.children.forEach(c => {
-          const crow = el("div","child");
-          crow.appendChild(el("span","nm", c.nm));
-          const cw = el("span","wt", fmt(c.grams != null ? c.grams * (c.count||1) : null));
-          if(c.est) cw.classList.add("est");
-          crow.appendChild(cw);
-          kids.appendChild(crow);
+          const cCount = c.count || 1;
+          const cName = c.nm + (cCount > 1 ? "  \u00d7" + cCount : "");
+          const cWt = c.grams != null ? c.grams * cCount : null;
+          if(c.sub){
+            const crow = el("div","child has-sub");
+            const cl1 = el("div","line");
+            cl1.appendChild(el("span","nm", cName));
+            const cl2 = el("div","line meta");
+            cl2.appendChild(el("span","sub", c.sub));
+            const cw = el("span","wt", fmt(cWt));
+            if(c.est) cw.classList.add("est");
+            cl2.appendChild(cw);
+            crow.appendChild(cl1); crow.appendChild(cl2);
+            kids.appendChild(crow);
+          } else {
+            const crow = el("div","child");
+            crow.appendChild(el("span","nm", cName));
+            const cw = el("span","wt", fmt(cWt));
+            if(c.est) cw.classList.add("est");
+            crow.appendChild(cw);
+            kids.appendChild(crow);
+          }
         });
         item.appendChild(kids);
 
